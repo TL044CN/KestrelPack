@@ -11,3 +11,9 @@
 
 #pragma once
 
+/**
+ * @brief Namespace for KestrelPack
+ */
+namespace KesrelPack {
+    
+} // namespace KestrelPack
