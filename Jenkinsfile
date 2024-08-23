@@ -15,22 +15,6 @@ pipeline {
     }
 
     stages {
-        /*
-        stage('Retrieving Artifacts') {
-            steps {
-                script{
-                    try {
-                        unarchive (mapping: [
-                            "build-${params.PLATFORM}-${params.COMPILER}/": "build"
-                        ])
-                        artifactsRetrieved = true
-                    } catch (Exception e) {
-
-                    }
-                }
-            }
-        }
-        */
         stage('initialize submodules') {
             steps {
                 script {
@@ -44,9 +28,10 @@ pipeline {
 /*/                    if(COMPILER == 'clang') {
                         sh 'apt install -y llvm'
                     }
-                    sh "apt install -y lcov doxygen"
                     sh "apt install -y python3-venv"
-*/                    sh """python3 -m venv venv
+*/
+                    sh "apt install -y lcov doxygen"
+                    sh """python3 -m venv venv
                         . venv/bin/activate
                         pip install lcov_cobertura
                     """
@@ -117,13 +102,5 @@ pipeline {
                 }
             }
         }
-        /*
-        stage('Archiving Artifacts') {
-            steps {
-                sh 'mv build "build-${params.PLATFORM}-${params.COMPILER}"'
-                archiveArtifacts (artifacts: "build-${params.PLATFORM}-${params.COMPILER}/", allowEmptyArchive: true, onlyIfSuccessful: true, fingerprint: true)
-            }
-        }
-        */
     }
 }
