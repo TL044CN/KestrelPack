@@ -56,7 +56,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh """
-                cmake -B build/ -DCMAKE_BUILD_TYPE=${params.BUILD_TYPE} -DOwLog_BUILD_DOCS=OFF
+                cmake -B build/ -DCMAKE_BUILD_TYPE=${params.BUILD_TYPE} -DKestrelPack_BUILD_DOCS=OFF
                 cmake --build build/ --config=${params.BUILD_TYPE} -j
                 """
             }
