@@ -32,9 +32,9 @@ class FrequencyModel {
     };
 
 private:
-    std::map<char, SymbolData> mFrequencyMap;      ///< Frequency map
-    uint32_t mTotalFrequency;                    ///< Count of all symbols that were addad to the model
-    bool mModelChanged;                         ///< Flag to indicate if the model has changed
+    std::map<char, SymbolData> mFrequencyMap;   ///< Frequency map
+    uint32_t mTotalFrequency = 0;               ///< Count of all symbols that were addad to the model
+    bool mModelChanged = false;                 ///< Flag to indicate if the model has changed
 
 public:
     /**

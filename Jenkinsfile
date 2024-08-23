@@ -1,7 +1,7 @@
 
 pipeline {
     agent{
-        label "linux&&clang"
+        label "linux&&clang-17"
     }
 
     parameters {

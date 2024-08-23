@@ -30,6 +30,7 @@ void FrequencyModel::recalculateSymbolData() {
     if(!mModelChanged) return;
 
     uint32_t previousBoundary = 0;
+
     for (auto& [symbol, data] : mFrequencyMap){
         auto& [symbolLow, symbolHigh] = data.range;
         symbolLow = previousBoundary;
@@ -41,15 +42,16 @@ void FrequencyModel::recalculateSymbolData() {
 
 
 void FrequencyModel::updateModel(symbol_t symbol) {
-    if(!mFrequencyMap.contains(symbol))
-        return;
-    else
-        mFrequencyMap[symbol].frequency++;
+    if(!mFrequencyMap.contains(symbol)) return;
+    mFrequencyMap[symbol].frequency++;
     mTotalFrequency++;
     mModelChanged = true;
 }
 
 std::pair<uint32_t, uint32_t> FrequencyModel::getSymbolRange(symbol_t symbol) const {
+    // This just ensures lazy evaluation. Technically the values already changed
+    const_cast<FrequencyModel*>(this)->recalculateSymbolData();
+
     if(!mFrequencyMap.contains(symbol))
         return {0, 0};
     return mFrequencyMap.at(symbol).range;

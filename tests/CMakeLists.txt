@@ -8,14 +8,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-FetchContent_Declare(
-  MockingBird
-  GIT_REPOSITORY https://github.com/TL044CN/Mockingbird
-  GIT_TAG 1.0.6
-)
-
-FetchContent_MakeAvailable(MockingBird)
-
 file(GLOB ${PROJECT_NAME}_TEST_SOURCE CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
@@ -27,7 +19,6 @@ add_executable(${PROJECT_NAME}_tests ${${PROJECT_NAME}_TEST_SOURCE})
 target_link_libraries(${PROJECT_NAME}_tests
     PRIVATE
         Catch2::Catch2
-        MockingBird
         ${PROJECT_NAME}
 )
 
@@ -52,45 +43,71 @@ catch_discover_tests(${PROJECT_NAME}_tests)
 # Create coverage target
 if(NOT ${PROJECT_NAME}_IS_SUBMODULE)
 
-  if(GCOV AND LCOV AND GENHTML)
-    message("Compiler: ${CMAKE_CXX_COMPILER_ID}")
+    find_program(LCOV lcov)
+    find_program(GENHTML genhtml)
+
+    #find correct coverage system
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
-        target_compile_options(${PROJECT_NAME}_tests PRIVATE -fprofile-arcs -ftest-coverage)
+        find_program(GCOV gcov)
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
-        target_compile_options(${PROJECT_NAME}_tests PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+        find_program(GCOV llvm-cov)
     endif()
-    message("Coverage flags: ${CMAKE_CXX_FLAGS}")
+
+    #prepare for coverage report
+    if(GCOV AND LCOV AND GENHTML)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            target_compile_options(${PROJECT_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
+        elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            target_compile_options(${PROJECT_NAME} PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+        endif()
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+            target_compile_options(${PROJECT_NAME}_tests PRIVATE -fprofile-arcs -ftest-coverage)
+        elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+            target_compile_options(${PROJECT_NAME}_tests PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+        endif()
 
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        message("Test executable: ${CMAKE_BINARY_DIR}/${PROJECT_NAME}_tests")
-        add_custom_target(coverage
-        COMMAND ${CMAKE_MAKE_PROGRAM} test
-        COMMAND ${GCOV} -r -pb tests/CMakeFiles/${PROJECT_NAME}_tests.dir/*.gcno CMakeFiles/${PROJECT_NAME}.dir/source/*.gcno
-        COMMAND ${LCOV} --capture --directory . --output-file coverage.info
-        COMMAND ${LCOV} --remove coverage.info '*catch2*' '*test_*' '/usr/*' --output-file coverage.info
-        COMMAND ${GENHTML} coverage.info --output-directory out
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Running GCOV and generating report"
-      )
-    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      set(PROFRAW_FILE "${CMAKE_BINARY_DIR}/tests/${PROJECT_NAME}-%p.profraw")
-      set(PROFDATA_FILE "${CMAKE_BINARY_DIR}/tests/coverage.profdata")
-      set(DEFAULT_PROFRAW_FILE "${CMAKE_BINARY_DIR}/tests/default.profraw")
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            add_custom_target(coverage
+                COMMAND ${CMAKE_MAKE_PROGRAM} test
+                COMMAND ${GCOV} -r -pb tests/CMakeFiles/${PROJECT_NAME}_tests.dir/*.gcno CMakeFiles/${PROJECT_NAME}.dir/source/*.gcno
+                COMMAND ${LCOV} --capture --directory . --output-file coverage.info
+                COMMAND ${LCOV} --remove coverage.info '*catch2*' '*test_*' '/usr/*' --output-file coverage.info
+                COMMAND ${GENHTML} coverage.info --output-directory out
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "Running GCOV and generating report"
+            )
+        elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(PROFRAW_FILE "${CMAKE_BINARY_DIR}/tests/${PROJECT_NAME}-%p.profraw")
+            set(PROFDATA_FILE "${CMAKE_BINARY_DIR}/tests/coverage.profdata")
+            set(DEFAULT_PROFRAW_FILE "${CMAKE_BINARY_DIR}/tests/default.profraw")
 
-      add_custom_target(coverage
-        COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE="${PROFRAW_FILE}" ${CMAKE_MAKE_PROGRAM} test
-        COMMAND llvm-profdata merge -sparse ${CMAKE_BINARY_DIR}/tests/${PROJECT_NAME}-*.profraw ${DEFAULT_PROFRAW_FILE} -o ${PROFDATA_FILE}
-        COMMAND ${GCOV} export -format=lcov ${CMAKE_BINARY_DIR}/tests/${PROJECT_NAME}_tests -instr-profile=${PROFDATA_FILE} > coverage.lcov
-        COMMAND ${LCOV} --remove coverage.lcov '*catch2*' '*test_*' '/usr/*' --output-file coverage.lcov
-        COMMAND ${LCOV} --summary coverage.lcov
-        COMMAND ${GENHTML} coverage.lcov --output-directory out
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Running llvm-cov and generating report"
-    )  
+            add_custom_target(coverage
+                COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE="${PROFRAW_FILE}" ${CMAKE_MAKE_PROGRAM} test
+                COMMAND llvm-profdata merge -sparse ${CMAKE_BINARY_DIR}/tests/${PROJECT_NAME}-*.profraw ${DEFAULT_PROFRAW_FILE} -o ${PROFDATA_FILE}
+                COMMAND ${GCOV} export -format=lcov ${CMAKE_BINARY_DIR}/tests/${PROJECT_NAME}_tests -instr-profile=${PROFDATA_FILE} > coverage.lcov
+                COMMAND ${LCOV} --remove coverage.lcov '*catch2*' '*test_*' '/usr/*' --output-file coverage.lcov
+                COMMAND ${LCOV} --summary coverage.lcov
+                COMMAND ${GENHTML} coverage.lcov --output-directory out
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "Running llvm-cov and generating report"
+            )
+        endif()
+    else()
+        if(NOT GCOV)
+            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                message(WARNING "llvm-cov not found. No coverage report will be generated.")
+            else()
+                message(WARNING "gcov not found. No coverage report will be generated.")
+            endif()
+        endif()
+        if(NOT LCOV)
+            message(WARNING "lcov not found. No coverage report will be generated.")
+        endif()
+        if(NOT GENHTML)
+            message(WARNING "genhtml not found. No coverage report will be generated.")
+        endif()
     endif()
-  endif()
-
 endif()
