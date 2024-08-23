@@ -43,8 +43,36 @@ catch_discover_tests(${PROJECT_NAME}_tests)
 # Create coverage target
 if(NOT ${PROJECT_NAME}_IS_SUBMODULE)
 
+  find_program(LCOV lcov)
+  find_program(GENHTML genhtml)
+
+  #find correct coverage system
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+      find_program(GCOV gcov)
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      find_program(GCOV llvm-cov)
+  endif()
+
+  #prepare for coverage report
   if(GCOV AND LCOV AND GENHTML)
-    message("Compiler: ${CMAKE_CXX_COMPILER_ID}")
+      if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+          target_compile_options(${PROJECT_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
+      elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+          target_compile_options(${PROJECT_NAME} PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+      endif()
+  else()
+      if(NOT GCOV)
+          message(WARNING "gcov not found. No coverage report will be generated.")
+      endif()
+      if(NOT LCOV)
+          message(WARNING "lcov not found. No coverage report will be generated.")
+      endif()
+      if(NOT GENHTML)
+          message(WARNING "genhtml not found. No coverage report will be generated.")
+      endif()
+  endif()
+
+  if(GCOV AND LCOV AND GENHTML)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
         target_compile_options(${PROJECT_NAME}_tests PRIVATE -fprofile-arcs -ftest-coverage)
@@ -52,12 +80,10 @@ if(NOT ${PROJECT_NAME}_IS_SUBMODULE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
         target_compile_options(${PROJECT_NAME}_tests PRIVATE -fprofile-instr-generate -fcoverage-mapping)
     endif()
-    message("Coverage flags: ${CMAKE_CXX_FLAGS}")
 
 
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        message("Test executable: ${CMAKE_BINARY_DIR}/${PROJECT_NAME}_tests")
-        add_custom_target(coverage
+      add_custom_target(coverage
         COMMAND ${CMAKE_MAKE_PROGRAM} test
         COMMAND ${GCOV} -r -pb tests/CMakeFiles/${PROJECT_NAME}_tests.dir/*.gcno CMakeFiles/${PROJECT_NAME}.dir/source/*.gcno
         COMMAND ${LCOV} --capture --directory . --output-file coverage.info
