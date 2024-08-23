@@ -99,36 +99,7 @@ find_package(Doxygen)
 endif()
 
 # build tests
-if(${PROJECT_NAME}_BUILD_TESTS)
-    find_program(LCOV lcov)
-    find_program(GENHTML genhtml)
-
-    #find correct coverage system
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        find_program(GCOV gcov)
-    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        find_program(GCOV llvm-cov)
-    endif()
-    
-    #prepare for coverage report
-    if(GCOV AND LCOV AND GENHTML)
-        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-            target_compile_options(${PROJECT_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
-        elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            target_compile_options(${PROJECT_NAME} PRIVATE -fprofile-instr-generate -fcoverage-mapping)
-        endif()
-    else()
-        if(NOT GCOV)
-            message(WARNING "gcov not found. No coverage report will be generated.")
-        endif()
-        if(NOT LCOV)
-            message(WARNING "lcov not found. No coverage report will be generated.")
-        endif()
-        if(NOT GENHTML)
-            message(WARNING "genhtml not found. No coverage report will be generated.")
-        endif()
-    endif()
-        
+if(${PROJECT_NAME}_BUILD_TESTS)        
     # tests:
     enable_testing()
     add_subdirectory(tests)
