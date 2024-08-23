@@ -8,14 +8,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-FetchContent_Declare(
-  MockingBird
-  GIT_REPOSITORY https://github.com/TL044CN/Mockingbird
-  GIT_TAG 1.0.6
-)
-
-FetchContent_MakeAvailable(MockingBird)
-
 file(GLOB ${PROJECT_NAME}_TEST_SOURCE CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
@@ -27,7 +19,6 @@ add_executable(${PROJECT_NAME}_tests ${${PROJECT_NAME}_TEST_SOURCE})
 target_link_libraries(${PROJECT_NAME}_tests
     PRIVATE
         Catch2::Catch2
-        MockingBird
         ${PROJECT_NAME}
 )
 
