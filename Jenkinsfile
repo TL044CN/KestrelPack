@@ -15,22 +15,6 @@ pipeline {
     }
 
     stages {
-        /*
-        stage('Retrieving Artifacts') {
-            steps {
-                script{
-                    try {
-                        unarchive (mapping: [
-                            "build-${params.PLATFORM}-${params.COMPILER}/": "build"
-                        ])
-                        artifactsRetrieved = true
-                    } catch (Exception e) {
-
-                    }
-                }
-            }
-        }
-        */
         stage('initialize submodules') {
             steps {
                 script {
@@ -118,13 +102,5 @@ pipeline {
                 }
             }
         }
-        /*
-        stage('Archiving Artifacts') {
-            steps {
-                sh 'mv build "build-${params.PLATFORM}-${params.COMPILER}"'
-                archiveArtifacts (artifacts: "build-${params.PLATFORM}-${params.COMPILER}/", allowEmptyArchive: true, onlyIfSuccessful: true, fingerprint: true)
-            }
-        }
-        */
     }
 }
