@@ -12,9 +12,9 @@
 #include "Encoder.hpp"
 namespace KestrelPack {
 
-constexpr uint64_t ceHALF = 0x80000000;
-constexpr uint64_t ceQUARTER = 0x40000000;
-constexpr uint64_t ceTHREE_QUARTERS = 0xC0000000;
+constexpr uint64_t ceHALF           = UINT64_MAX / 2;
+constexpr uint64_t ceQUARTER        = UINT64_MAX / 4;
+constexpr uint64_t ceTHREE_QUARTERS = ceHALF + ceQUARTER;
 
 
 Encoder::Encoder(FrequencyModel& model) : mModel(model) {}
@@ -38,16 +38,8 @@ void Encoder::encodeSymbol(FrequencyModel::symbol_t symbol, stream_t& stream) {
     while (true) {
         if (mHigh < ceHALF) {
             encodeBit(0, stream);
-            while (mBitBuffer > 0) {
-                encodeBit(1, stream);
-                --mBitBuffer;
-            }
         } else if (mLow >= ceHALF) {
             encodeBit(1, stream);
-            while (mBitBuffer > 0) {
-                encodeBit(0, stream);
-                --mBitBuffer;
-            }
             mLow  -= ceHALF;
             mHigh -= ceHALF;
         } else if (mLow >= ceQUARTER && mHigh < ceTHREE_QUARTERS) {
