@@ -57,7 +57,7 @@ public:
      */
     struct SymbolData {
         uint32_t frequency;                     ///< Frequency of the symbol
-        std::pair<uint32_t, uint32_t> range;    ///< Range of the symbol
+        std::pair<uint64_t, uint64_t> range;    ///< Range of the symbol
     };
 
 private:
@@ -109,7 +109,7 @@ public:
      * @param symbol the symbol to get the range for
      * @return std::pair<uint32_t, uint32_t> the range of the symbol
      */
-    std::pair<uint32_t, uint32_t> getSymbolRange(symbol_t symbol) const;
+    std::pair<uint64_t, uint64_t> getSymbolRange(symbol_t symbol) const;
 
     /**
      * @brief Get the Number of Symbols that were added to the model
