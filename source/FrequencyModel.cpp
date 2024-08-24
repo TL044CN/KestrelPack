@@ -17,6 +17,7 @@ FrequencyModel::FrequencyModel(std::span<const char> symbols) {
     for (const auto& symbol : symbols)
         if(!mFrequencyMap.contains(symbol))
             addSymbol(symbol);
+    mIsReset = true;
 }
 
 
@@ -52,6 +53,7 @@ void FrequencyModel::updateModel(symbol_t symbol) {
     mFrequencyMap[symbol].frequency++;
     mTotalFrequency++;
     mModelChanged = true;
+    mIsReset = false;
 }
 
 std::pair<uint64_t, uint64_t> FrequencyModel::getSymbolRange(symbol_t symbol) const {
@@ -63,17 +65,32 @@ std::pair<uint64_t, uint64_t> FrequencyModel::getSymbolRange(symbol_t symbol) co
     return mFrequencyMap.at(symbol).range;
 }
 
+FrequencyModel::symbol_t FrequencyModel::getSymbol(uint64_t value) const {
+    for (const auto& [symbol, data] : mFrequencyMap) {
+        if (value >= data.range.first && value < data.range.second)
+            return symbol;
+    }
+    return 0;
+}
+
 uint32_t FrequencyModel::getTotalFrequency() const {
     return mTotalFrequency;
 }
 
 void FrequencyModel::reset() {
+    if(mIsReset) return;
+
     mTotalFrequency = 0;
     for (auto& [symbol, data] : mFrequencyMap){
         data.frequency = 1;
         ++mTotalFrequency;
     }
     mModelChanged = true;
+    mIsReset = true;
+}
+
+bool FrequencyModel::isReset() const {
+    return mIsReset;
 }
 
 } // namespace KestrelPack

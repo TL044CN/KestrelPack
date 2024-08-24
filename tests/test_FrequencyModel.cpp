@@ -28,6 +28,9 @@ SCENARIO("FrequencyModel") {
             CHECK(low  == 0xAAAAAAAAAAAAAAAA);
             CHECK(high == 0xFFFFFFFFFFFFFFFF);
         }
+        THEN("The model should be reset") {
+            REQUIRE(model.isReset());
+        }
         WHEN("A symbol ('a') is added") {
             model.updateModel('a');
             THEN("The total frequency should be 4") {
@@ -37,6 +40,9 @@ SCENARIO("FrequencyModel") {
                 auto [low, high] = model.getSymbolRange('a');
                 CHECK(low  == 0);
                 CHECK(high == 0x7ffffffffffffffe);
+            }
+            THEN("The model should not be reset") {
+                REQUIRE_FALSE(model.isReset());
             }
         }
         WHEN("The symbol 'b' is added") {
@@ -48,6 +54,9 @@ SCENARIO("FrequencyModel") {
                 auto [low, high] = model.getSymbolRange('b');
                 CHECK(low  == 0x3fffffffffffffff);
                 CHECK(high == 0xbffffffffffffffd);
+                AND_THEN("Getting the Symbol for a Value between 1/4 and 3/4 of the range should return 'b'") {
+                    REQUIRE(model.getSymbol(0x4fffffffffffffff) == 'b');
+                }
             }
         }
         WHEN("Two symbols are added ('a','b')") {
@@ -65,6 +74,15 @@ SCENARIO("FrequencyModel") {
                 auto [low, high] = model.getSymbolRange('b');
                 CHECK(low  == 0x6666666666666666);
                 CHECK(high == 0xCCCCCCCCCCCCCCCC);
+            }
+        }
+        WHEN("The model is reset") {
+            model.reset();
+            THEN("The total frequency should be 3") {
+                REQUIRE(model.getTotalFrequency() == 3);
+            }
+            THEN("The model should be reset") {
+                REQUIRE(model.isReset());
             }
         }
     }

@@ -50,7 +50,7 @@ public:
 private:
     FrequencyModel& mModel;                 ///< Reference to the underlying encoding model
     uint64_t mLow           = 0;            ///< Low value of the current range
-    uint64_t mHigh          = 0xFFFFFFFF;   ///< High value of the current range
+    uint64_t mHigh          = UINT64_MAX;   ///< High value of the current range
     uint8_t mBitBuffer      = 0;            ///< Buffer for the output
     uint8_t mBitCount       = 0;            ///< Number of bits in the buffer
     uint32_t mTotalBits     = 0;            ///< Total number of bits encoded
@@ -58,7 +58,7 @@ private:
 public:
     /**
      * @brief Construct a new Encoder object
-     * 
+     * @note The model will be reset to have frequencies of 1
      * @param model the model to use for encoding
      */
     Encoder(FrequencyModel& model);

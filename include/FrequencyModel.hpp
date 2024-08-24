@@ -64,6 +64,7 @@ private:
     std::map<char, SymbolData> mFrequencyMap;   ///< Frequency map
     uint32_t mTotalFrequency = 0;               ///< Count of all symbols that were addad to the model
     bool mModelChanged = false;                 ///< Flag to indicate if the model has changed
+    bool mIsReset = false;                      ///< Flag to indicate if the model has been reset
 
 public:
     /**
@@ -71,6 +72,7 @@ public:
      * @details This constructor will add all the symbols in the span to the model
      * @note This constructor will add the symbols to the model with a frequency of 1
      * @note This constructor will flag the model as changed
+     * @note This constructor will flag the model as reset
      * @param symbols the symbols to add to the model
      */
     FrequencyModel(std::span<const char> symbols);
@@ -95,6 +97,7 @@ public:
     /**
      * @brief Increment the frequency of a symbol
      * @note This function will flag the model as changed
+     * @note This function might flag the model as not reset
      * @note This function will not add the symbol to the model
      * @param symbol the symbol to get the data for
      */
@@ -112,6 +115,14 @@ public:
     std::pair<uint64_t, uint64_t> getSymbolRange(symbol_t symbol) const;
 
     /**
+     * @brief Get the symbol that corresponds to a value
+     * @details This function will return the symbol that corresponds to the value
+     * @param value the value to get the symbol for
+     * @return symbol_t the symbol that corresponds to the value
+     */
+    symbol_t getSymbol(uint64_t value) const;
+
+    /**
      * @brief Get the Number of Symbols that were added to the model
      * 
      * @return uint32_t the number of symbols
@@ -121,10 +132,21 @@ public:
     /**
      * @brief Reset all the frequencies and the total frequency count
      * @details This function will reset the frequency of all symbols in the model to 1
-     *          and recount the total frequency count
+     *          and recount the total frequency count. If the model is already reset
+     *          this function will do nothing
      * @note This function will flag the model as changed
+     * @note This function will flag the model as reset
      */
     void reset();
+
+    /**
+     * @brief Check if the model is in a reset state
+     * @details The model is in a reset state if the frequencies of all symbols are 1
+     * 
+     * @return true if the model has been reset
+     * @return false if the model has not been reset
+     */
+    bool isReset() const;
 
 };
 

@@ -17,8 +17,8 @@ SCENARIO("Encoder") {
         THEN("The low value should be 0") {
             REQUIRE(encoder.mLow == 0);
         }
-        THEN("The high value should be 0xFFFFFFFF") {
-            REQUIRE(encoder.mHigh == 0xFFFFFFFF);
+        THEN("The high value should be the maximum value") {
+            REQUIRE(encoder.mHigh == UINT64_MAX);
         }
         THEN("The bit buffer should be 0") {
             REQUIRE(encoder.mBitBuffer == 0);
@@ -43,12 +43,13 @@ SCENARIO("Encoder") {
                 encoder.encodeSymbol('a', stream);
                 encoder.encodeSymbol('c', stream);
                 THEN("The stream should have data") {
-                    CHECK(stream.size() == 3);
+                    CHECK(stream.size() == 4);
                 }
                 THEN("The stream should contain the encoded data") {
-                    CHECK(std::bitset<8>(stream[0]) == std::bitset<8>(0b00010100));
-                    CHECK(std::bitset<8>(stream[1]) == std::bitset<8>(0b00000111));
-                    CHECK(std::bitset<8>(stream[2]) == std::bitset<8>(0b00100101));
+                    CHECK(std::bitset<8>(stream[0]) == std::bitset<8>(0b00001001));
+                    CHECK(std::bitset<8>(stream[1]) == std::bitset<8>(0b01010001));
+                    CHECK(std::bitset<8>(stream[2]) == std::bitset<8>(0b00000000));
+                    CHECK(std::bitset<8>(stream[3]) == std::bitset<8>(0b01000111));
                 }
             }
             AND_WHEN("The encoding is finished") {
@@ -57,7 +58,7 @@ SCENARIO("Encoder") {
                     REQUIRE(stream.size() > 0);
                 }
                 THEN("the stream should contain the encoded data") {
-                    REQUIRE(std::bitset<8>(stream[0]) == std::bitset<8>(0b01000001));
+                    REQUIRE(std::bitset<8>(stream[0]) == std::bitset<8>(0b00100001));
                 }
             }
         }

@@ -17,7 +17,9 @@ constexpr uint64_t ceQUARTER        = UINT64_MAX / 4;
 constexpr uint64_t ceTHREE_QUARTERS = ceHALF + ceQUARTER;
 
 
-Encoder::Encoder(FrequencyModel& model) : mModel(model) {}
+Encoder::Encoder(FrequencyModel& model) : mModel(model) {
+    mModel.reset();
+}
 
 
 void Encoder::encodeBit(bool bit, stream_t& stream) {
