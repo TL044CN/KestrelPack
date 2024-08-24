@@ -17,3 +17,5 @@ build
 *.sbsl
 
 .jenkins
+
+*.profraw

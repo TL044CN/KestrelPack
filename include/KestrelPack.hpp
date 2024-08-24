@@ -14,6 +14,15 @@
 /**
  * @brief Namespace for KestrelPack
  */
-namespace KesrelPack {
-    
-} // namespace KestrelPack
+namespace KestrelPack {} // namespace KestrelPack
+
+/**
+ * @defgroup Coding Coding
+ * @brief Classes and functions for encoding and decoding data
+ */
+
+/**
+ * @defgroup Models Models
+ * @brief Classes and functions for creating and using models
+ *        for encoding and decoding data
+ */

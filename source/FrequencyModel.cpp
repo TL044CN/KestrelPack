@@ -21,6 +21,7 @@ FrequencyModel::FrequencyModel(std::span<const char> symbols) {
 
 
 void FrequencyModel::addSymbol(symbol_t symbol) {
+    if(mFrequencyMap.contains(symbol)) return;
     mFrequencyMap[symbol] = {.frequency = 1};
     mTotalFrequency++;
     mModelChanged = true;
@@ -29,14 +30,19 @@ void FrequencyModel::addSymbol(symbol_t symbol) {
 void FrequencyModel::recalculateSymbolData() {
     if(!mModelChanged) return;
 
-    uint32_t previousBoundary = 0;
+    uint64_t previousBoundary = 0;
+    uint64_t partitionSize = UINT64_MAX / mTotalFrequency;
 
-    for (auto& [symbol, data] : mFrequencyMap){
+    for (auto& [symbol, data] : mFrequencyMap) {
         auto& [symbolLow, symbolHigh] = data.range;
         symbolLow = previousBoundary;
-        symbolHigh = symbolLow + data.frequency;
+        symbolHigh = symbolLow + (data.frequency * partitionSize);
         previousBoundary = symbolHigh;
     }
+
+    if(!mFrequencyMap.empty())
+        mFrequencyMap.rbegin()->second.range.second = UINT64_MAX;
+
     mModelChanged = false;
 }
 
@@ -48,8 +54,8 @@ void FrequencyModel::updateModel(symbol_t symbol) {
     mModelChanged = true;
 }
 
-std::pair<uint32_t, uint32_t> FrequencyModel::getSymbolRange(symbol_t symbol) const {
-    // This just ensures lazy evaluation. Technically the values already changed
+std::pair<uint64_t, uint64_t> FrequencyModel::getSymbolRange(symbol_t symbol) const {
+    // This just ensures lazy evaluation.
     const_cast<FrequencyModel*>(this)->recalculateSymbolData();
 
     if(!mFrequencyMap.contains(symbol))
@@ -59,6 +65,15 @@ std::pair<uint32_t, uint32_t> FrequencyModel::getSymbolRange(symbol_t symbol) co
 
 uint32_t FrequencyModel::getTotalFrequency() const {
     return mTotalFrequency;
+}
+
+void FrequencyModel::reset() {
+    mTotalFrequency = 0;
+    for (auto& [symbol, data] : mFrequencyMap){
+        data.frequency = 1;
+        ++mTotalFrequency;
+    }
+    mModelChanged = true;
 }
 
 } // namespace KestrelPack
