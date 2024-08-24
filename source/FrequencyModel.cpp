@@ -61,4 +61,13 @@ uint32_t FrequencyModel::getTotalFrequency() const {
     return mTotalFrequency;
 }
 
+void FrequencyModel::reset() {
+    mTotalFrequency = 0;
+    for (auto& [symbol, data] : mFrequencyMap){
+        data.frequency = 1;
+        ++mTotalFrequency;
+    }
+    mModelChanged = true;
+}
+
 } // namespace KestrelPack

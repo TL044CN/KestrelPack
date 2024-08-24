@@ -36,6 +36,7 @@ include(CMakeFiles/PrintInfo.cmake)
 set(${PROJECT_NAME}_SOURCES
     source/${PROJECT_NAME}.cpp
     source/FrequencyModel.cpp
+    source/Encoder.cpp
 )
 
 if(${PROJECT_NAME}_BUILD_SHARED)
